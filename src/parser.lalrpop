@@ -1,0 +1,45 @@
+use crate::ast::{Keyword, Expression};
+use snailquote::unescape;
+
+grammar;
+
+pub Expression: Expression = {
+    <id:Identifier> LeftBracket <expr_list:ExpressionList> RightBracket => {
+        return Expression::Invocation(id.into(), expr_list);
+    },
+    <s:StringLiteral> => Expression::StringLiteral(s)
+}
+
+ExpressionList: Vec<Expression> = {
+    <expr:Expression> Comma <expr_list:ExpressionList> => {
+        let mut list = vec![expr];
+        list.extend(expr_list);
+        list
+    },
+    <expr:Expression?> => {
+        if expr.is_none() {
+            return vec![];
+        }
+        vec![expr.unwrap()]
+    }
+}
+
+pub Keyword: Keyword = {
+    Func => Keyword::Func,
+}
+
+pub StringLiteral: String = {
+    <s:DoubleQuoteString> => unescape(s).unwrap().into(),
+}
+
+match {
+    r"\(" => LeftBracket,
+    r"\)" => RightBracket,
+    r"\{" => LeftBrace,
+    r"\}" => RightBrace,
+    r"," => Comma,
+    r"func" => Func,
+    r#""([^"\r\n\\]|\\.)*""# => DoubleQuoteString,
+} else {
+    r"[_a-zA-Z][a-zA-Z0-9_]+" => Identifier
+}

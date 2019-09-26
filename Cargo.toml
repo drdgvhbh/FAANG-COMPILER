@@ -1,0 +1,21 @@
+[package]
+name = "faang"
+version = "0.1.0"
+authors = ["Ryan Lee <drdgvhbh@gmail.com>"]
+edition = "2018"
+
+[build-dependencies]
+lalrpop = "0.17"
+
+[dependencies]
+regex = "0.2"
+lalrpop-util = "0.17"
+clap = "2"
+colored = "1.8"
+inkwell = { git = "https://github.com/TheDan64/inkwell", branch = "llvm7-0" }
+llvm-sys = "70"
+snailquote = "0.1"
+
+[dev-dependencies]
+pretty_assertions = "0.6.1"
+tempfile = "3.1.0"
