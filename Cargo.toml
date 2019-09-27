@@ -11,6 +11,8 @@ lalrpop = "0.17"
 regex = "0.2"
 lalrpop-util = "0.17"
 clap = "2"
+codespan = "0.4"
+codespan-reporting = "0.4"
 colored = "1.8"
 inkwell = { git = "https://github.com/TheDan64/inkwell", branch = "llvm7-0" }
 llvm-sys = "70"

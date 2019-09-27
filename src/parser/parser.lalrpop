@@ -1,17 +1,19 @@
 use crate::ast::{Keyword, Expression};
 use snailquote::unescape;
+use lalrpop_util::{ParseError};
+use std::fmt::Debug;
 
-grammar;
+grammar<'err>(errors: &'err mut Vec<ParseError<usize, Token<'input>, &'static str>>);
 
 pub Expression: Expression = {
-    <id:Identifier> LeftBracket <expr_list:ExpressionList> RightBracket => {
+    <id:r"[_a-zA-Z][a-zA-Z0-9_]+"> "(" <expr_list:ExpressionList> ")" => {
         return Expression::Invocation(id.into(), expr_list);
     },
     <s:StringLiteral> => Expression::StringLiteral(s)
 }
 
 ExpressionList: Vec<Expression> = {
-    <expr:Expression> Comma <expr_list:ExpressionList> => {
+    <expr:Expression> "," <expr_list:ExpressionList> => {
         let mut list = vec![expr];
         list.extend(expr_list);
         list
@@ -21,25 +23,13 @@ ExpressionList: Vec<Expression> = {
             return vec![];
         }
         vec![expr.unwrap()]
-    }
+    },
 }
 
 pub Keyword: Keyword = {
-    Func => Keyword::Func,
+    "func" => Keyword::Func,
 }
 
 pub StringLiteral: String = {
-    <s:DoubleQuoteString> => unescape(s).unwrap().into(),
-}
-
-match {
-    r"\(" => LeftBracket,
-    r"\)" => RightBracket,
-    r"\{" => LeftBrace,
-    r"\}" => RightBrace,
-    r"," => Comma,
-    r"func" => Func,
-    r#""([^"\r\n\\]|\\.)*""# => DoubleQuoteString,
-} else {
-    r"[_a-zA-Z][a-zA-Z0-9_]+" => Identifier
+    <s:r#""([^"\r\n\\]|\\.)*""#> => unescape(s).unwrap().into(),
 }
