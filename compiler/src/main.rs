@@ -2,13 +2,12 @@ use clap::{App, Arg};
 use colored::*;
 use inkwell::context::Context;
 
-mod ast;
-mod compiler;
-#[allow(dead_code)]
-mod parser;
+use faang::{
+    ast,
+    compiler::{self, external::stdio, stdlib},
+    parser,
+};
 
-use compiler::external::stdio;
-use compiler::stdlib;
 use lalrpop_util::ParseError;
 use std::collections::HashMap;
 use std::io::Write;
@@ -44,70 +43,9 @@ fn main() {
     let mut files = Files::new();
     let file_id = files.add(source_file_name, &contents);
 
-    let program_parser = parser::ExpressionParser::new();
-    let mut errors = vec![];
-    let program_result = program_parser.parse(&mut errors, &contents);
-    if errors.len() > 0 || program_result.is_err() {
-        if program_result.is_err() {
-            errors.push(program_result.unwrap_err());
-        }
-
-        let mut diagnostics = vec![];
-        for err in &errors {
-            match err {
-                ParseError::UnrecognizedToken { token, expected } => {
-                    let (start, input, end) = token;
-                    let label = diagnostic::Label::new(
-                        file_id,
-                        Span::new((*start) as u32, (*end) as u32),
-                        format!("expected one of {} here", expected.join(", ")),
-                    );
-                    let diagnostic = diagnostic::Diagnostic::new_error(
-                        format!("unrecognized token: {}", input),
-                        label,
-                    );
-                    diagnostics.push(diagnostic);
-                }
-                ParseError::UnrecognizedEOF { location, expected } => {
-                    let start = location;
-                    let end = start;
-                    let label = diagnostic::Label::new(
-                        file_id,
-                        Span::new((*start) as u32, (*end) as u32),
-                        format!("expected one of {} here", expected.join(", ")),
-                    );
-                    let diagnostic =
-                        diagnostic::Diagnostic::new_error(format!("unrecognized EOF"), label);
-                    diagnostics.push(diagnostic);
-                }
-                ParseError::InvalidToken { location } => {
-                    let start = location;
-                    let end = start;
-                    let label = diagnostic::Label::new(
-                        file_id,
-                        Span::new((*start) as u32, (*end) as u32),
-                        "invalid token",
-                    );
-                    let diagnostic =
-                        diagnostic::Diagnostic::new_error(format!("invalid token"), label);
-                    diagnostics.push(diagnostic);
-                }
-                ParseError::ExtraToken { token } => {
-                    let (start, input, end) = token;
-                    let label = diagnostic::Label::new(
-                        file_id,
-                        Span::new((*start) as u32, (*end) as u32),
-                        "unrecognized token",
-                    );
-                    let diagnostic = diagnostic::Diagnostic::new_error(
-                        format!("unrecognized token: {}", input),
-                        label,
-                    );
-                    diagnostics.push(diagnostic);
-                }
-                _ => {}
-            }
-        }
+    let parse_result = faang::parse(&contents, file_id);
+    if parse_result.is_err() {
+        let diagnostics = parse_result.unwrap_err();
         for diagnostic in diagnostics {
             codespan_reporting::term::emit(&mut writer, &Config::default(), &files, &diagnostic)
                 .unwrap();
@@ -116,7 +54,7 @@ fn main() {
         std::process::exit(1);
     }
 
-    let program = program_result.unwrap();
+    let program = parse_result.unwrap();
 
     let context = Context::create();
     let module = context.create_module(source_file_name);

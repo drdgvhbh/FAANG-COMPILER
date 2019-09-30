@@ -1,7 +1,21 @@
-language: rust
-rust:
-  - stable
-  - beta
-  - nightly
 matrix:
   fast_finish: true
+  include:
+    - language: rust
+      rust:
+        - stable
+        - beta
+        - nightly
+      before_script:
+        - cd compiler
+      script:
+        - cargo test
+    - language: rust
+      rust:
+        - stable
+        - beta
+        - nightly
+      before_script:
+        - cd language-server
+      script:
+        - cargo test

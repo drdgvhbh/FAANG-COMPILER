@@ -1,0 +1,77 @@
+{
+	"name": "FAANG",
+	"fileTypes": [
+		"faang"
+	],
+	"patterns": [{
+		"include": "#function-call"
+	}, {
+		"include": "#paren-expression"
+	}],
+	"repository": {
+		"expression": {
+			"patterns": [{
+				"include": "#string-literal"
+			}, {
+				"include": "#paren-expression"
+			}]
+		},
+		"string-literal": {
+			"begin": "\"",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.faang"
+				}
+			},
+			"end": "\"",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.end.faang"
+				}
+			},
+			"name": "string.quoted.double.faang",
+			"patterns": [{
+				"match": "\\\\.",
+				"name": "constant.character.escape.faang"
+			}]
+		},
+		"paren-expression": {
+			"begin": "\\(",
+			"end": "\\)",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.paren.open"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.paren.close"
+				}
+			},
+			"name": "expression.group.faang",
+			"patterns": [{
+				"include": "#expression"
+			}]
+		},
+		"function-call": {
+			"begin": "[_a-zA-Z][a-zA-Z0-9_]+",
+			"beginCaptures": {
+				"0": {
+					"name": "support.function"
+				}
+			},
+			"end": "\\)",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.paren.close"
+				}
+			},
+			"name": "function.call.faang",
+			"patterns": [{
+				"include": "#paren-expression"
+			}]
+		}
+	},
+	"scopeName": "source.faang",
+	"uuid": "c75f7b85-9987-42b4-b82c-2a4b080b04e8"
+}
