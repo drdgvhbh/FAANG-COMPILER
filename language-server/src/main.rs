@@ -1,5 +1,3 @@
-#![feature(rustc_private)]
-
 mod lsp;
 
 #[macro_use]
