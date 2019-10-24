@@ -1,4 +1,4 @@
-use crate::ast::{Keyword, Expression};
+use crate::ast::{Keyword, Expression, NumberLiteral, ElementaryType};
 use snailquote::unescape;
 use lalrpop_util::{ParseError};
 use std::fmt::Debug;
@@ -6,14 +6,14 @@ use std::fmt::Debug;
 grammar<'err>(errors: &'err mut Vec<ParseError<usize, Token<'input>, &'static str>>);
 
 pub Expression: Expression = {
-    <id:r"[_a-zA-Z][a-zA-Z0-9_]+"> "(" <expr_list:ExpressionList> ")" => {
+    <id:Identifier> LeftParen <expr_list:ExpressionList> RightParen => {
         return Expression::Invocation(id.into(), expr_list);
     },
-    <s:StringLiteral> => Expression::StringLiteral(s)
+    <s:ElementaryType> => Expression::ElementaryType(s)
 }
 
 ExpressionList: Vec<Expression> = {
-    <expr:Expression> "," <expr_list:ExpressionList> => {
+    <expr:Expression> Comma <expr_list:ExpressionList> => {
         let mut list = vec![expr];
         list.extend(expr_list);
         list
@@ -27,9 +27,26 @@ ExpressionList: Vec<Expression> = {
 }
 
 pub Keyword: Keyword = {
-    "func" => Keyword::Func,
+    Func => Keyword::Func,
+}
+
+pub ElementaryType: ElementaryType = {
+    <s:StringLiteral> => ElementaryType::StringLiteral(s),
 }
 
 pub StringLiteral: String = {
-    <s:r#""([^"\r\n\\]|\\.)*""#> => unescape(s).unwrap().into(),
+    <s:EscapedStringLiteral> => unescape(s).unwrap().into()
+}
+
+match {
+    "func" => Func,
+    "," => Comma,
+    r"\(" => LeftParen,
+    r"\)" => RightParen,
+    r"[_a-zA-Z][a-zA-Z0-9_]+" => Identifier,
+    r#""([^"\r\n\\]|\\.)*""# => EscapedStringLiteral,
+    r#"([+-]?[1-9]\d{0,31}|0)"# => Int,
+    r#"\+"# => Plus
+} else {
+    r#"[+-]?([0-9]*[.])?[0-9]+"# => Float
 }

@@ -3,7 +3,19 @@ type Name = String;
 #[derive(Debug, PartialEq)]
 pub enum Expression {
     Invocation(Name, Vec<Expression>),
+    ElementaryType(ElementaryType),
+}
+
+#[derive(Debug, PartialEq)]
+pub enum ElementaryType {
+    NumberLiteral(NumberLiteral),
     StringLiteral(String),
+}
+
+#[derive(Debug, PartialEq)]
+pub enum NumberLiteral {
+    Int32(i32),
+    Float32(f32),
 }
 
 #[derive(Debug, PartialEq)]
@@ -59,7 +71,9 @@ mod tests {
             invocation,
             Expression::Invocation(
                 "println".into(),
-                vec![Expression::StringLiteral("asdf".into())]
+                vec![Expression::ElementaryType(ElementaryType::StringLiteral(
+                    "asdf".into()
+                ))]
             )
         );
         assert_eq!(errors.len(), 0);

@@ -1,5 +1,7 @@
 mod parser;
 
-pub use parser::{ExpressionParser, KeywordParser, StringLiteralParser, Token};
+pub use parser::{
+    ElementaryTypeParser, ExpressionParser, KeywordParser, StringLiteralParser, Token,
+};
 
 use codespan::ByteIndex;

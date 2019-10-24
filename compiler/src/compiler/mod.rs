@@ -49,7 +49,7 @@ impl<'a> Compiler<'a> {
                     "val",
                 );
             }
-            super::ast::Expression::StringLiteral(lit) => {
+            super::ast::Expression::ElementaryType(t) => {
                 return Err("not implemented".into());
             }
         }
@@ -66,9 +66,12 @@ impl<'a> Compiler<'a> {
     ) -> Result<BasicValueEnum, String> {
         match expression {
             super::ast::Expression::Invocation(name, args) => Err("not impelemented".into()),
-            super::ast::Expression::StringLiteral(lit) => {
-                Ok(util::alloc_string(&lit, "str", self.context, self.builder).into())
-            }
+            super::ast::Expression::ElementaryType(t) => match t {
+                super::ast::ElementaryType::StringLiteral(s) => {
+                    Ok(util::alloc_string(&s, "str", self.context, self.builder).into())
+                }
+                super::ast::ElementaryType::NumberLiteral(n) => panic!(),
+            },
         }
     }
 }
